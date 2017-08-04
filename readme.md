@@ -28,32 +28,35 @@ Using CRC8 as a checksum should be sufficient as we do not send packets longer t
 COMMANDS  < 0x8 will have a fixed length \
 COMMANDS >= 0x8 will have variable length (byte 2 = length)
 
-## 0x0 SET FLAGS
-set flags such as enable, video format,...
+## 0x0 SET REGISTER
+set a given register id to a value (used e.g. for enable, video format,...)
 
-packet length: 4
-frame format: [0x80] [0x00] [FLAGS:8] [CRC:8]
+packet length: 5
+frame format: [0x80] [0x00] [REGISTER:8] [VALUE:8] [CRC:8]
 
-- bit 0    : enable osd
-- bit 1+2  : video format (0 = auto, 1 = pal, 2 = ntsc, 3 = reserved)
-- bit 3..7 : reserved
+Register:
+- 0x00 = enable (0 = off, 1 = on)
+- 0x01 = video format (0 = auto, 1 = pal, 2 = ntsc)
+- [tbd]
 
-## 0x1 FILL SCREEN
-fill the whole screen with the given value
+## 0x1 FILL SCREEN REGION
+Fill a given region with the given value.\
+Region starts at [x,y], will size given by width and height.\
+Width and Height exceeding the physical screen region has to be clipped at device level!\
 
-packet length: 4
-frame format: [0x80] [0x01] [VALUE:8] [CRC:8]
+packet length: 8
+frame format: [0x80] [0x01] [X:8] [Y:8] [WIDTH:8] [HEIGHT:8] [VALUE:8] [CRC:8]
 
-## 0x2 SET CHARACTER 
+## 0x2 WRITE 
 
-Set a single character to a given value
+Write a single character to a given value
 packet length: 6
 frame format: [0x80] [0x02] [X:8] [Y:8] [VALUE:8] [CRC:8]
 
 
 ## 0x3 .. 0x7 RESERVED
 
-## 0x8 CHAR WRITE (horizontal auto increment)
+## 0x8 WRITE BUFFER (horizontal auto increment)
 Write n characters to the given position with horizontal auto increment.
 
 packet length: 4 + DATA{2}
@@ -63,7 +66,7 @@ with LEN = 0..60 (as the serial buffer is 64 bytes)
 The x position will auto increment for every byte in the buffer,
 y position will increment when the end of line is reached and x is set to zero.
 
-## 0x9 CHAR WRITE (vertical auto increment)
+## 0x9 WRITE BUFFER (vertical auto increment)
 Write n characters to the given position with vertical auto increment.
 
 packet length: 4 + DATA{2}
