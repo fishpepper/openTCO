@@ -14,6 +14,7 @@ Please fork this repo and submit a pull request for discussion.
 [HEADER:8 0x80] [DEVICE_ID:4 COMMAND:4]  ..data.. [CRC:8]
 
 The total frame length is variable in order to efficiently allow short commands.
+This will use CRC8/DVB-S2 as a checksum (see crc8.h for a fast example implementation).
 Using CRC8 as a checksum should be sufficient as we do not send packets longer than 64 bytes. (or do we?)
 
 # DEVICE_IDs
