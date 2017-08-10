@@ -87,7 +87,8 @@ frame format: [0x80] [0x0F] [LEN:8] [SPECIAL_CMD:8] ... [CRC:8]
 
 SPECIAL_COMMAND:
 - 0x00 : sticks and state, LEN=5, DATA = [A:8] [E:8] [T:8] [R:8] [FC_STATE:8]
-- 0x01..0xFF reserved
+- 0x01 : gyro fft bin data, LEN=17, DATA = [AXIS:8] [16 x GYRO FFT DATA:8]
+- 0x02..0xFF reserved
 
 ## open points:
 
