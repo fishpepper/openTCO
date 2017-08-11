@@ -38,6 +38,8 @@ frame format: [0x80] [0x00] [REGISTER:8] [VALUE:8] [CRC:8]
 Register:
 - 0x00 = enable (0 = off, 1 = on)
 - 0x01 = video format (0 = auto, 1 = pal, 2 = ntsc)
+- 0x02 = overlay brightness white (0..100 in percent, 0 = invisible, 100 = fully visible)
+- 0x03 = overlay brightness black (0..100 in percent, 0 = invisible, 100 = fully visible)
 - [tbd]
 
 ## 0x1 FILL SCREEN REGION
