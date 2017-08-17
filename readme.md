@@ -17,30 +17,69 @@ The total frame length is variable in order to efficiently allow short commands.
 This will use CRC8/DVB-S2 as a checksum (see crc8.h for a fast example implementation).
 Using CRC8 as a checksum should be sufficient as we do not send packets longer than 64 bytes. (or do we?)
 
+# Connection
+
+This protocol will use a full duplex serial port @115200 8N1.\
+For maximum flexibility multiple openTCO devices can share the 
+same serial port or run on individual serial ports.\
+
+
 # DEVICE_IDs
 
 - 0x0 = generic OSD
 - 0x1 = generic Vtx
 - 0x2 = generic Camera
-- 0x3 ... 0xF reserved for now
+- 0x3 ... 0x7 reserved for now
+- 0x8 = 0x8 | 0x0 = generic OSD response
+- 0x9 = 0x8 | 0x1 = generic VTX response
+- 0xA = 0x8 | 0x2 = generic CAM response
+
+# mandatory command set for ALL openTCO devicetypes
+
+In order to allow automatic detection all openTCO devices will have to implement\
+the register access command (0x0):
+
+## 0x0 REGISTER ACCESS
+
+read or write a given register id to a 16bit value (used e.g. for enable, video format,...)
+
+packet length: 6
+frame format: [0x80] [0x00] [R/W:1 REGISTER:7] [VALUE_LO:8] [VALUE_HI:8] [CRC:8]
+
+R/W:
+- 1 bit read/write flag
+ - 0 = WRITE
+ - 1 = READ
+  - this will require a device reply (within 100ms timeout)
+  - response: [0x80] [<deviceid_response>:4 0:4] [0:1 REGISTER:7] [VALUE_LO:8] [VALUE_HI:8] [CRC:8]
+
+Mandatory registers:
+- 0x00 = enable status / capabilities  [see individual device types for details]
 
 # generic OSD device command set:
 
 COMMANDS  < 0x8 will have a fixed length \
 COMMANDS >= 0x8 will have variable length (byte 2 = length)
 
-## 0x0 SET REGISTER
-set a given register id to a value (used e.g. for enable, video format,...)
+## 0x0 REGISTER ACCESS
 
-packet length: 5
-frame format: [0x80] [0x00] [REGISTER:8] [VALUE:8] [CRC:8]
+see above, all devices have to support this
 
-Register:
-- 0x00 = enable (0 = off, 1 = on)
-- 0x01 = video format (0 = auto, 1 = pal, 2 = ntsc)
-- 0x02 = overlay brightness white (0..100 in percent, 0 = invisible, 100 = fully visible)
-- 0x03 = overlay brightness black (0..100 in percent, 0 = invisible, 100 = fully visible)
-- [tbd]
+Register 0x00-0x0F:
+- 0x00 = enable status / capabilities:  
+ - b0 = enable osd
+ - b1 = enable stickoverlay
+ - b2 = enable spectrum
+ - b3 = enable crosshair
+ - b4..b15 reserved
+ - bf will try to enable all capabilities by a write. when reading reg 0x00 devices should only return those capabilities that are enabled and supported
+- 0x01 = video format 
+ - 0 = auto, 1 = pal, 2 = ntsc
+- 0x02 = overlay brightness black 
+ - 0..100 in percent -> 0 = darkest (= black), 100 = brightest (= some kind of grey)
+- 0x03 = overlay brightness white
+ - 0..100 in percent -> 0 = darkest (= grey), 100 = brightest (= white)
+- 0x04..0x0F reserved
 
 ## 0x1 FILL SCREEN REGION
 Fill a given region with the given value.\
